@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 #****************************************************************************************************
 #Conversion functions
 
-def car2kep(r, v, mu):
+def car2kep(r, v, mu = 398600.433):
   """
   car2kep: Conversion from Cartesian coordinates to Keplerian elements.
   N.B np.clip() avoid numerical erros in the computation of np.arccos() to be between -1 and 1
@@ -26,6 +26,9 @@ def car2kep(r, v, mu):
     OM -> RAAN [rad]
     om -> Pericenter anomaly [rad]
     theta -> True anomaly [rad]
+
+  PARAMETER:
+    mu -> Earth planetary constant [km^3/s^2]
   """
 
   # Position and velocity norm
@@ -80,7 +83,7 @@ def car2kep(r, v, mu):
 
 #-----------------------------------------------------------------------------------------------------------
 
-def kep2car(a, e, i, OM, om, theta, mu, PF = 0):
+def kep2car(a, e, i, OM, om, theta, mu = 398600.433, PF = 0):
   """
   kep2car: Conversion from keplerian elements to cartesian coordinates
 
@@ -102,6 +105,9 @@ def kep2car(a, e, i, OM, om, theta, mu, PF = 0):
     PF = 1:
     r -> Position vector [km] PF reference frame
     v -> Velocity vector [km/s] PF reference frame
+
+  PARAMETER:
+    mu -> Earth planetary constant [km^3/s^2]
   """
 
   # Semi-latus rectum
@@ -141,7 +147,7 @@ def kep2car(a, e, i, OM, om, theta, mu, PF = 0):
 #****************************************************************************************************
 #Plot functions
 
-def plotOrbit(kepEl, mu, deltaTh=2*np.pi, stepTh=np.pi/180, theta_mark=False, ax=None, mark_color = "red"):
+def plotOrbit(kepEl, mu = 398600.433, deltaTh=2*np.pi, stepTh=np.pi/180, theta_mark=False, ax=None, mark_color = "red"):
   """
   plotOrbit: Plot the arc length deltaTh of the orbit described by kepEl
 

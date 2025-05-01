@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
-import pandas as pdiowejfiweoj
+import pandas as pd
 
 from utils import kep2car, car2kep, plotOrbit, earth_3D
 
