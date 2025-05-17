@@ -1,19 +1,10 @@
-
-
-import numpy as np
-import matplotlib.pyplot as plt
 import os
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation
 import pandas as pd
+import matplotlib.pyplot as plt
+from utils import * 
 
-from utils import kep2car, car2kep, plotOrbit, earth_3D
-from Orbitchanges import * 
-
-#****************************************************************************************************
-#Define output dirs
-output_dir = './output/'
-os.makedirs(output_dir, exist_ok=True)
+# Directory where store all the plot
+output_dir = './output'
 
 # Read the input CSV
 input_path = './input/orbit_data.csv'
@@ -43,7 +34,8 @@ OM_f = row['Omega_fin'] # RAAN [rad]
 om_f = row['omega_fin'] # Pericenter anomaly [rad]
 theta_f = row['theta_fin'] # True anomaly [rad]
 
-#check and print
+r_f_ECI, v_f_ECI = kep2car(a_f, e_f, i_f, OM_f, om_f, theta_f)
+
 print("Initial Orbit:")
 print(f"Initial pos: {r_i_ECI} km")
 print(f"Initial vel: {v_i_ECI} km/s")
@@ -54,6 +46,8 @@ print(f"OM_i = {OM_i} rad")
 print(f"om_i = {om_i} rad")
 print(f"theta_i = {theta_i} rad")
 print("\nTarget Orbit:")
+print(f"Final pos: {r_f_ECI} km")
+print(f"Final vel: {v_f_ECI} km/s")
 print(f"a_f = {a_f} km")
 print(f"e_f = {e_f}")
 print(f"i_f = {i_f} rad")
@@ -61,280 +55,135 @@ print(f"OM_f = {OM_f} rad")
 print(f"om_f = {om_f} rad")
 print(f"theta_f ={theta_f} rad")
 print('=====================================================================================')
-#****************************************************************************************************
-#Naive strategy = indipendent and consecutive maneuvers
 
-#1st maneuvers : Change orbital plane
-img_name = 'first_man.pdf'
-out_file = 'first_man_data.csv'
 
-Delta_v_1, om_transition, theta_maneuver_1, Delta_t_1 = changeOrbitalPlane(a_i, e_i, i_i, OM_i, om_i, theta_i, i_f, OM_f)
+# Plot the initial orbit in 3D and 2D
+fig, axes = plt.subplots(1, 2, figsize=(16, 8), subplot_kw={'projection': None})
+ax_3d = fig.add_subplot(121, projection='3d')  # 3D plot
+ax_2d = fig.add_subplot(122)  # 2D plot
 
-'''
-print("Cost of the Maneuver:", Delta_v_1, "km/s")
-print("Time to perform the maneuver:", Delta_t_1, "s")
-print("Final inclination:", i_f, "rad")
-print("Final RAAN: ", OM_f, "rad")
-print("Current argument of periapsis:", om_transition, "rad")
-print("Current true anomaly:", theta_maneuver_1, "rad")
-'''
-
-#Plot  initial orbit and the FIRST transition orbit 
-
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
+# 3D Plot of the initial orbit
+ax_3d.set_box_aspect([1, 1, 1])
+ax_3d.set_xlabel('X [km]', fontsize=12)
+ax_3d.set_ylabel('Y [km]', fontsize=12)
+ax_3d.set_zlabel('Z [km]', fontsize=12)
+ax_3d.set_title('Initial Orbit (3D)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# -----------------------------
-# Plot initial orbit (before maneuver)
+ax_3d.set_xticks(ticks)
+ax_3d.set_yticks(ticks)
+ax_3d.set_zticks(ticks)
+ax_3d.set_xlim(-1.2e4, 1.2e4)
+ax_3d.set_ylim(-1.2e4, 1.2e4)
+ax_3d.set_zlim(-1.2e4, 1.2e4)
+earth_3D(ax_3d)
 initial_orbit = np.array([a_i, e_i, i_i, OM_i, om_i, theta_i])
-X_i, Y_i, Z_i = plotOrbit(initial_orbit, theta_mark=True, ax=ax, mark_color = "red")
+plotOrbit(initial_orbit, theta_mark=True, ax=ax_3d, mark_color="red", line_color="blue")
 
-# Plot Fisrt transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_i, Y_i, Z_i, color='orange', linewidth=1.5, label='Initial orbit')
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color = "blue", linewidth = 1.5, label ='First transition orbit')
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'First Maneuver plot saved in {save_path}')
-
-#Save data for late
-maneuver_data = {
-    'cost1_km_s':      Delta_v_1,
-    'Delta_t_1_s':         Delta_t_1,
-    'final_inclination_rad': i_f,
-    'final_RAAN_rad':        OM_f,
-    'om_transition_rad':     om_transition,
-    'theta_maneuver_1_rad':  theta_maneuver_1
-}
-df_out = pd.DataFrame([maneuver_data])
-out_path = os.path.join(output_dir, out_file)
-df_out.to_csv(out_path, index=False)
-
-print(f"First Maneuver data saved to {out_path}")
-
-#------------------------------------------------------------------------------------
-#2nd maneuvers : Change argument of pericenter
-img_name = 'second_man.pdf'
-out_file = 'second_man_data.csv'
-
-# Change the argument of pericenter
-Delta_om = (om_f - om_transition) % (2. * np.pi)  # Ensure Delta_om is in the range [0, 2*pi]
-
-# Need to perform the maneuver at theta_a = Delta_om/2 or theta = np.pi + Delta_om/2
-theta_A = Delta_om / 2.  # Maneuver point A [rad]
-theta_B = np.pi + (Delta_om / 2.)  # Maneuver point B [rad]
-
-# Compute the time of flight
-Delta_t_A = timeOfFlight(a_i, e_i, theta_maneuver_1, theta_A)
-Delta_t_B = timeOfFlight(a_i, e_i, theta_maneuver_1, theta_B)
-
-# Select the maneuver point
-if Delta_t_A < Delta_t_B:
-    Delta_v_2, om_final, theta_maneuver_2 = changePeriapsisArg(a_i, e_i, om_transition, Delta_om, theta_A)
-    Delta_t_2 = Delta_t_A
-else:
-    Delta_v_2, om_final, theta_maneuver_2 = changePeriapsisArg(a_i, e_i, om_transition, Delta_om, theta_B)
-    Delta_t_2 = Delta_t_B
-'''
-print("Cost of the Maneuver:", Delta_v_2, "km/s")
-print("Time to perform the maneuver:", Delta_t_2, "s")
-print("Final argument of periapsis:", om_final, "rad")
-print("Final true anomaly:", theta_maneuver_2, "rad")
-'''
-
-
-# Plot the FIRST transition orbit and the SECOND transition orbit 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
+# 2D Plot of the initial orbit
+ax_2d.grid(True)
+ax_2d.set_xlabel('X [km]', fontsize=12)
+ax_2d.set_ylabel('Y [km]', fontsize=12)
+ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
+ax_2d.set_xticks(ticks)
+ax_2d.set_yticks(ticks)
+earth_2D(ax_2d)
+plotOrbit2D(initial_orbit, theta_mark=True, ax=ax_2d, mark_color="red", line_color="blue")
+ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
 
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
+# Save the initial orbit figure
+initial_orbit_path = os.path.join(output_dir, 'initial_orbit.pdf')
+plt.tight_layout()
+plt.savefig(initial_orbit_path)
+print(f"Initial orbit plot saved to {initial_orbit_path}")
+plt.close(fig)
 
-earth_3D(ax)
+# Plot the final orbit in 3D and 2D
+fig, axes = plt.subplots(1, 2, figsize=(16, 8), subplot_kw={'projection': None})
+ax_3d = fig.add_subplot(121, projection='3d')  # 3D plot
+ax_2d = fig.add_subplot(122)  # 2D plot
 
-# Plot FIRST transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot SECOND transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_maneuver_2])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
+# 3D Plot of the final orbit
+ax_3d.set_box_aspect([1, 1, 1])
+ax_3d.set_xlabel('X [km]', fontsize=12)
+ax_3d.set_ylabel('Y [km]', fontsize=12)
+ax_3d.set_zlabel('Z [km]', fontsize=12)
+ax_3d.set_title('Final Orbit (3D)', fontsize=14)
+ax_3d.set_xticks(ticks)
+ax_3d.set_yticks(ticks)
+ax_3d.set_zticks(ticks)
+ax_3d.set_xlim(-1.2e4, 1.2e4)
+ax_3d.set_ylim(-1.2e4, 1.2e4)
+ax_3d.set_zlim(-1.2e4, 1.2e4)
+earth_3D(ax_3d)
+final_orbit = np.array([a_f, e_f, i_f, OM_f, om_f, theta_f])
+plotOrbit(final_orbit, theta_mark=True, ax=ax_3d, mark_color="green", line_color="orange")
 
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color='orange', linewidth=1.5, label='First transition orbit')
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color = "blue", linewidth = 1.5, label ='Second transition orbit')
-
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Second Maneuver plot saved in {save_path}')
-
-#Save data for late
-maneuver_data = {
-    'cost2_km_s':      Delta_v_2,
-    'Delta_t_2_s':     Delta_t_2,
-    'om_final':        om_final,
-    'theta_maneuver_2_rad':  theta_maneuver_2
-}
-df_out = pd.DataFrame([maneuver_data])
-out_path = os.path.join(output_dir, out_file)
-df_out.to_csv(out_path, index=False)
-
-print(f"Second Maneuver data saved to {out_path}")
-
-#------------------------------------------------------------------------------------
-#3rd maneuvers : Change shape
-img_name = 'third_man.pdf'
-out_file = 'third_man_data.csv'
-
-# Hohmann transfer to arrive to the final orbit where om_final = om_f, hence aligned pericenter
-Delta_v_Hohmann1, Delta_v_Hohmann2, Delta_t_Hohmann, theta_after_Hohmann = changeOrbitShape(a_i, e_i, om_final, a_f, e_f, om_f) # Return the optimal Hohman transfer cost between the two orbits
-
-# Compute the position where the maneuver must be performed
-if np.isclose(theta_after_Hohmann, np.pi, 1e-16):
-  Delta_t_preHohmann = timeOfFlight(a_i, e_i, theta_maneuver_2, 0) # Pericenter transition orbit -> Apocenter final orbit
-  theta_pre_Hohmann = 0
-else:
-  Delta_t_preHohmann = timeOfFlight(a_i, e_i, theta_maneuver_2, np.pi) # Apocenter transition orbit -> Pericenter transition orbit
-  theta_pre_Hohmann = np.pi
-
-Delta_v_3 = Delta_v_Hohmann1 + Delta_v_Hohmann2 # Total Cost of the Hohmann transfer
-Delta_t_3 = Delta_t_preHohmann + Delta_t_Hohmann # Total time cost for the Hohmann transfer
-
-# Wait until it reaches theta_f
-Delta_t_4 = timeOfFlight(a_f, e_f, theta_after_Hohmann, theta_f) # Time to reach the final position [s]
-'''
-print("Cost of the Maneuver:", Delta_v_3, "km/s")
-print("Time to perform the maneuver:", Delta_t_3, "s")
-print("Final semi-major axis:", a_f, "km")
-print("Final eccentricity:", e_f)
-print("Final true anomaly:", theta_after_Hohmann, "rad")
-'''
-
-#Plot the SECOND transition orbit and the FINAL orbit
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
+# 2D Plot of the final orbit
+ax_2d.grid(True)
+ax_2d.set_xlabel('X [km]', fontsize=12)
+ax_2d.set_ylabel('Y [km]', fontsize=12)
+ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
+ax_2d.set_xticks(ticks)
+ax_2d.set_yticks(ticks)
+earth_2D(ax_2d)
+earth_2D(ax_2d)
+plotOrbit2D(final_orbit, theta_mark=True, ax=ax_2d, mark_color="green", line_color="orange")
+ax_2d.set_title('Final Orbit (2D)', fontsize=14)
 
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
+# Save the final orbit figure
+final_orbit_path = os.path.join(output_dir, 'final_orbit.pdf')
+plt.tight_layout()
+plt.savefig(final_orbit_path)
+print(f"Final orbit plot saved to {final_orbit_path}")
+plt.close(fig)
 
-earth_3D(ax)
+# Define output directories for both strategies
+strategy1_dir = './output/StandardStrategy1'
+strategy2_dir = './output/StandardStrategy2'
 
-# -----------------------------
-# Plot SECOND transition orbit (with initial Hohmann maneuver point)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_pre_Hohmann])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot FINAL orbit (with second Hohmann maneuver point)
-current_orbit = np.array([a_f, e_f, i_f, OM_f, om_f, theta_after_Hohmann])
-X_f_0, Y_f_0, Z_f_0 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
+# Load summary data for both strategies
+strategy1_summary_path = os.path.join(strategy1_dir, 'maneuver_summary_B1.csv')
+strategy2_summary_path = os.path.join(strategy2_dir, 'maneuver_summary_B1.csv')
 
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color='orange', linewidth=1.5, label='Second transition orbit')
-ax.plot(X_f_0, Y_f_0, Z_f_0, color = "blue", linewidth = 1.5, label ='Final orbit')
+if not os.path.exists(strategy1_summary_path):
+    raise FileNotFoundError(f"Summary file for Strategy 1 not found: {strategy1_summary_path}")
+if not os.path.exists(strategy2_summary_path):
+    raise FileNotFoundError(f"Summary file for Strategy 2 not found: {strategy2_summary_path}")
 
-ax.legend()
+strategy1_data = pd.read_csv(strategy1_summary_path)
+strategy2_data = pd.read_csv(strategy2_summary_path)
 
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Third Maneuver plot saved in {save_path}')
+# Extract total delta-v and total time cost
+strategy1_total_delta_v = strategy1_data['Total_Delta_v_km_s'].iloc[0]
+strategy2_total_delta_v = strategy2_data['Total_Delta_v_km_s'].iloc[0]
 
-#Save data for late
-maneuver_data = {
-    'cost3_km_s':      Delta_v_3,
-    'Delta_t_3_s':     Delta_t_3,
-    'a_final':         a_f,
-    'e_final':         e_f,
-    'final_theta_anom': theta_after_Hohmann
-}
-df_out = pd.DataFrame([maneuver_data])
-out_path = os.path.join(output_dir, out_file)
-df_out.to_csv(out_path, index=False)
+strategy1_total_time = strategy1_data['Total_Delta_t_s'].iloc[0]
+strategy2_total_time = strategy2_data['Total_Delta_t_s'].iloc[0]
 
-print(f"Third Maneuver data saved to {out_path}")
+# Create bar plots
+os.makedirs(output_dir, exist_ok=True)
 
-#*********************************************************************************************
-#Print and save cost and time 
-print('=====================================================================================')
+# Plot 1: Total Delta-v Comparison
+plt.figure(figsize=(8, 6))
+strategies = ['Strategy 1', 'Strategy 2']
+delta_v_values = [strategy1_total_delta_v, strategy2_total_delta_v]
+plt.bar(strategies, delta_v_values, color=['blue', 'green'])
+plt.title('Total Delta-v Comparison')
+plt.ylabel('Total Delta-v [km/s]')
+plt.savefig(os.path.join(output_dir, 'total_delta_v_comparison.png'))
+print(f"Total Delta-v comparison plot saved to {os.path.join(output_dir, 'total_delta_v_comparison.png')}")
 
-#summary print
-print("Total cost Maneuver:")
-print(f"First maneuver: {Delta_v_1:.3f} km/s")
-print(f"Second maneuver: {Delta_v_2:.3f} km/s")
-print(f"Hohmann transfer: {Delta_v_3:.3f} km/s")
-print(f"Total cost: {Delta_v_1 + Delta_v_2 + Delta_v_3:.3f} km/s")
-
-print("\nTotal time cost Maneuver:")
-print(f"First maneuver: {Delta_t_1:.3f} s")
-print(f"Second maneuver: {Delta_t_2:.3f} s")
-print(f"Hohmann transfer (reach pericenter + transfer orbit): {Delta_t_3:.3f} s")
-print(f"Reach the final position: {Delta_t_4:.3f} s")
-print(f"Total time cost: {Delta_t_1 + Delta_t_2 + Delta_t_3 + Delta_t_4:.3f} s")
-
-#collect summury data as a dict
-total_maneuver_data = {
-    'orbit_id': orbit_id,
-    'Delta_v_1_km_s': Delta_v_1,
-    'Delta_v_2_km_s': Delta_v_2,
-    'Delta_v_3_km_s': Delta_v_3,
-    'Total_Delta_v_km_s': Delta_v_1 + Delta_v_2 + Delta_v_3,
-    
-    'Delta_t_1_s': Delta_t_1,
-    'Delta_t_2_s': Delta_t_2,
-    'Delta_t_3_s': Delta_t_3,
-    'Delta_t_4_s': Delta_t_4,
-    'Total_Delta_t_s': Delta_t_1 + Delta_t_2 + Delta_t_3 + Delta_t_4
-}
-
-#Save to unique CSV per orbit ID
-summary_outfile = os.path.join(output_dir, f"maneuver_summary_{orbit_id}.csv")
-#save as dataframe as .csv file
-df_summary = pd.DataFrame([total_maneuver_data])
-df_summary.to_csv(summary_outfile, index=False)
-
-print(f"Summary for orbit '{orbit_id}' saved to: {summary_outfile}")
+# Plot 2: Total Time Cost Comparison
+plt.figure(figsize=(8, 6))
+time_values = [strategy1_total_time, strategy2_total_time]
+plt.bar(strategies, time_values, color=['blue', 'green'])
+plt.title('Total Time Cost Comparison')
+plt.ylabel('Total Time Cost [s]')
+plt.savefig(os.path.join(output_dir, 'total_time_cost_comparison.png'))
+print(f"Total Time Cost comparison plot saved to {os.path.join(output_dir, 'total_time_cost_comparison.png')}")
 
 #TO DO : 
 # Check of final orbit + general check
+# Try a strategy with bielliptic + change orbital plane + bielliptic + changeperiapsisArg

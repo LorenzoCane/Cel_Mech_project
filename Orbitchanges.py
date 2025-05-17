@@ -179,16 +179,16 @@ def changeOrbitShape_bielliptic(a_i, e_i, om_i, a_f, e_f, om_f, r_b, mu = 398600
 
   Delta_v1 = (
       np.sqrt(2 * mu * (1 / rp_i - 1 / (2 * a_T_1))) -
-      np.sqrt(2 * mu * (1 / (2 * rp_i)))
+      np.sqrt(2 * mu * (1 / rp_i - 1/ (2 * a_i)))
   )
   Delta_v2 = (
       np.sqrt(2 * mu * (1 / r_b - 1 / (2 * a_T_2))) -
       np.sqrt(2 * mu * (1 / r_b - 1 / (2 * a_T_1)))
   )
   Delta_v3 = (
-      np.sqrt(2 * mu * (1 / (2 * rp_f))) -
+      np.sqrt(2 * mu * (1 / rp_f - 1 / (2 * a_f))) -
       np.sqrt(2 * mu * (1 / rp_f - 1 / (2 * a_T_2)))
-  )
+  )  
 
   Delta_t = np.pi * np.sqrt(a_T_1**3 /mu) + np.pi * np.sqrt(a_T_2 ** 3/mu)   # Time cost of the Maneuver [s]
   theta_f = 0 # True anomaly on final orbit [rad]
@@ -218,11 +218,11 @@ def changePeriapsisArg(a_i, e_i, om_i, Delta_om, theta_0, mu = 398600.433):
   om_f = (om_i + Delta_om) % (2 * np.pi) # Final pericenter anomaly between o and 2.np.pi [rad]
 
   # Case a: theta_0 = Delta_om/2
-  if np.isclose(theta_0, Delta_om/2, atol=1e-16):
+  if theta_0 == Delta_om/2:
     theta_f = 2 * np.pi - Delta_om/2 # New true anomaly [rad]
   else:
     # Case b: theta_0 = np.pi + Delta_om/2
-    if np.isclose(theta_0, np.pi + Delta_om/2, atol=1e-16):
+    if theta_0 == np.pi + Delta_om/2:
       theta_f = np.pi - Delta_om/2 # New true anomaly [rad]
     else:
       # Print error message

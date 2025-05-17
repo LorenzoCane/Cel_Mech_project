@@ -1,7 +1,3 @@
-
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -147,53 +143,132 @@ def kep2car(a, e, i, OM, om, theta, mu = 398600.433, PF = 0):
 #****************************************************************************************************
 #Plot functions
 
-def plotOrbit(kepEl, mu = 398600.433, deltaTh=2*np.pi, stepTh=np.pi/180, theta_mark=False, ax=None, mark_color = "red"):
-  """
-  plotOrbit: Plot the arc length deltaTh of the orbit described by kepEl
+def plotOrbit(kepEl, mu=398600.433, deltaTh=2*np.pi, stepTh=np.pi/180, theta_mark=False, ax=None, 
+              mark_color="red", line_color="blue", mark_type="x", mark_label="Satellite position"):
+    """
+    plotOrbit: Plot the arc length deltaTh of the orbit described by kepEl as a solid line,
+               and the remaining part of the orbit as a dotted line.
 
-  INPUT:
-    kepEl -> Orbital elements vector [a, e, i, OM, om, theta]
-    mu -> Gravitational constant
-    deltaTh -> arc length [rad]
-    stepTh -> arc step [rad]
-    theta_mark -> (Default = False) if True, place a mark at theta = kepEl[5]
-    mark_color -> (Default = "red") color of the mark
-    ax -> (optional) matplotlib axis to plot on
-  OUTPUT:
-    X -> X position [km]
-    Y -> Y position [km]
-    Z -> Z position [km]
-  """
+    INPUT:
+        kepEl -> Orbital elements vector [a, e, i, OM, om, theta]
+        mu -> Gravitational constant
+        deltaTh -> arc length [rad]
+        stepTh -> arc step [rad]
+        theta_mark -> (Default = False) if True, place a mark at theta = kepEl[5]
+        mark_color -> (Default = "red") color of the mark
+        line_color -> (Default = "blue") color of the orbit line
+        mark_type -> (Default = "x") marker style for the mark
+        mark_label -> (Default = "Satellite position") label for the mark
+        ax -> (optional) matplotlib axis to plot on
 
-  # Create theta vector (from 0 to deltaTh)
-  theta_vector = np.arange(0, deltaTh, stepTh)
+    OUTPUT:
+        X -> X position [km]
+        Y -> Y position [km]
+        Z -> Z position [km]
+    """
 
-  # Initialize output vectors
-  X = np.array([])
-  Y = np.array([])
-  Z = np.array([])
+    # Create theta vectors for solid and dotted lines
+    theta_solid = np.arange(kepEl[5], kepEl[5] + deltaTh, stepTh)
+    theta_dotted = np.arange(0, 2 * np.pi, stepTh)
 
-  # Loop over theta vector and compute positions
-  for theta in theta_vector:
-      r_ECI, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], theta, mu)
-      X = np.append(X, r_ECI[0])
-      Y = np.append(Y, r_ECI[1])
-      Z = np.append(Z, r_ECI[2])
+    # Initialize output vectors
+    X_solid, Y_solid, Z_solid = np.array([]), np.array([]), np.array([])
+    X_dotted, Y_dotted, Z_dotted = np.array([]), np.array([]), np.array([])
 
-  # Setup plot if no axis provided
-  if ax is None:
-      fig = plt.figure()
-      ax = fig.add_subplot(111, projection='3d')
+    # Compute positions for the solid line
+    for theta in theta_solid:
+        r_ECI, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], theta, mu)
+        X_solid = np.append(X_solid, r_ECI[0])
+        Y_solid = np.append(Y_solid, r_ECI[1])
+        Z_solid = np.append(Z_solid, r_ECI[2])
 
-  # Plot the orbit
-  ax.plot(X, Y, Z, linewidth=1.5)
+    # Compute positions for the dotted line
+    for theta in theta_dotted:
+        r_ECI, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], theta, mu)
+        X_dotted = np.append(X_dotted, r_ECI[0])
+        Y_dotted = np.append(Y_dotted, r_ECI[1])
+        Z_dotted = np.append(Z_dotted, r_ECI[2])
 
-  # If theta_mark is True, place a red X at kepEl[5]
-  if theta_mark:
-      r_mark, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], kepEl[5], mu)
-      ax.scatter(r_mark[0], r_mark[1], r_mark[2], color=mark_color, marker='x', s=100, label=f'Mark at θ = {np.degrees(kepEl[5]):.1f}°')
+    # Setup plot if no axis provided
+    if ax is None:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
 
-  return X, Y, Z
+    # Plot the solid and dotted lines
+    ax.plot(X_solid, Y_solid, Z_solid, linewidth=1.5, color=line_color)
+    ax.plot(X_dotted, Y_dotted, Z_dotted, linestyle='dotted', linewidth=1.5, color=line_color)
+
+    # If theta_mark is True, place a mark at kepEl[5]
+    if theta_mark:
+        r_mark, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], kepEl[5], mu)
+        ax.scatter(r_mark[0], r_mark[1], r_mark[2], color=mark_color, marker=mark_type, s=100, label=mark_label)
+
+    return X_solid, Y_solid, Z_solid
+
+
+def plotOrbit2D(kepEl, mu=398600.433, deltaTh=2*np.pi, stepTh=np.pi/180, theta_mark=False, ax=None, 
+                mark_color="red", line_color="blue", mark_type="x", mark_label="Satellite position"):
+    """
+    plotOrbit2D: Plot the arc length deltaTh of the orbit described by kepEl in 2D (X-Y plane)
+                 as a solid line, and the remaining part of the orbit as a dotted line.
+
+    INPUT:
+        kepEl -> Orbital elements vector [a, e, i, OM, om, theta]
+        mu -> Gravitational constant
+        deltaTh -> arc length [rad]
+        stepTh -> arc step [rad]
+        theta_mark -> (Default = False) if True, place a mark at theta = kepEl[5]
+        mark_color -> (Default = "red") color of the mark
+        line_color -> (Default = "blue") color of the orbit line
+        mark_type -> (Default = "x") marker style for the mark
+        mark_label -> (Default = "Satellite position") label for the mark
+        ax -> (optional) matplotlib axis to plot on
+
+    OUTPUT:
+        X -> X position [km]
+        Y -> Y position [km]
+    """
+
+    # Create theta vectors for solid and dotted lines
+    theta_solid = np.arange(kepEl[5], kepEl[5] + deltaTh, stepTh)
+    theta_dotted = np.arange(0, 2 * np.pi, stepTh)
+
+    # Initialize output vectors
+    X_solid, Y_solid = np.array([]), np.array([])
+    X_dotted, Y_dotted = np.array([]), np.array([])
+
+    # Compute positions for the solid line
+    for theta in theta_solid:
+        r_ECI, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], theta, mu)
+        X_solid = np.append(X_solid, r_ECI[0])
+        Y_solid = np.append(Y_solid, r_ECI[1])
+
+    # Compute positions for the dotted line
+    for theta in theta_dotted:
+        r_ECI, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], theta, mu)
+        X_dotted = np.append(X_dotted, r_ECI[0])
+        Y_dotted = np.append(Y_dotted, r_ECI[1])
+
+    # Setup plot if no axis provided
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # Plot the solid and dotted lines
+    ax.plot(X_solid, Y_solid, linewidth=1.5, color=line_color)
+    ax.plot(X_dotted, Y_dotted, linestyle='dotted', linewidth=1.5, color=line_color)
+
+    # If theta_mark is True, place a mark at kepEl[5]
+    if theta_mark:
+        r_mark, _ = kep2car(kepEl[0], kepEl[1], kepEl[2], kepEl[3], kepEl[4], kepEl[5], mu)
+        ax.scatter(r_mark[0], r_mark[1], color=mark_color, marker=mark_type, s=100, label=mark_label)
+
+    # Set axis labels and legend
+    ax.set_xlabel("X [km]")
+    ax.set_ylabel("Y [km]")
+    ax.legend()
+
+    return X_solid, Y_solid
+
 
 #-----------------------------------------------------------------------------------------------------------
 
@@ -212,3 +287,23 @@ def earth_3D(ax):
   y = 6371 * np.sin(u) * np.sin(v)
   z = 6371 * np.cos(v)
   ax.plot_surface(x, y, z, color='blue', alpha=0.3)
+
+def earth_2D(ax, color='blue', marker='o', size=100):
+    """
+    earth_2D: Plot the Earth as a blue dot in the X-Y plane.
+
+    INPUT:
+        ax -> Matplotlib axis to plot on
+        color -> Color of the Earth dot (default: 'blue')
+        marker -> Marker style for the Earth dot (default: 'o')
+        size -> Size of the Earth dot (default: 100)
+
+    OUTPUT:
+        ---
+    """
+    # Plot the Earth as a single point at the origin
+    ax.scatter(0, 0, color=color, marker=marker, s=size, label="Earth")
+    ax.set_aspect('equal', adjustable='datalim')
+    ax.set_xlabel("X [km]")
+    ax.set_ylabel("Y [km]")
+    ax.legend()
