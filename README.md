@@ -61,7 +61,7 @@ Run the main script to perform a final comparison of the results:
 
 ## Academic Context
 
-This project was developed as part of the academic exam for the Celestial Mechanics and Astrodynamics course within the [MPMSSIA Master's Program] (https://www.mpmssia.unito.it/do/home.pl) at the University of Turin.
+This project was developed as part of the academic exam for the Celestial Mechanics and Astrodynamics course within the [MPMSSIA Master's Program](https://www.mpmssia.unito.it/do/home.pl) at the University of Turin.
 
 Further improvements and extensions may be implemented in the future, such as:
 
