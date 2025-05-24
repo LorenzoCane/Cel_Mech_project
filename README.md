@@ -35,9 +35,6 @@ This project provides functionalities to:
 
 ## Usage
 
-
-## 🚦 How to Use
-
 1. **Add Input Data**  
    Add your desired transfer data to `input/orbit_data.csv`.
 
