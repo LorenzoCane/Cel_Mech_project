@@ -7,6 +7,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 import pandas as pd
 
+from utils import *
+
 #****************************************************************************************************
 def timeOfFlight(a, e, theta_i, theta_f, mu = 398600.433):
   """
@@ -336,3 +338,157 @@ def changeOrbitalPlane(a_i, e_i, i_i, Om_i, om_i, theta_0, i_f, Om_f, mu = 39860
   theta_f = theta_f % (2 * np.pi)  # Ensure theta_f is in the range [0, 2*pi]
 
   return Delta_v, om_f, theta_f, Delta_t
+
+# **********************************************************************************  
+
+def findLineofNodes(i_i, Om_i, i_f, Om_f, mu = 398600.433):
+  """
+  Find the line of nodes for the given orbital elements.
+
+  INPUT:
+    i_i, Om_i -> initial inclination and RAAN [rad]
+    i_f, Om_f -> final inclination and RAAN [rad]
+
+  OUTPUT:
+    u_i -> argument of the line of nodes initial orbit [rad]
+    u_f -> argument of the line of nodes final orbit [rad]
+    theta_f -> true anomaly in the target orbit [rad]
+  PARAMETER: 
+    mu -> Earth planetary constant [km^3/s^2]
+  """
+  # Compute changes in RAAN and inclination
+  Delta_Om = Om_f - Om_i  # Change in RAAN [rad]
+  Delta_i = i_f - i_i  # Change in inclination [rad]
+
+  # Compute the rotation angle alpha between the orbital planes
+  alpha = np.arccos(np.cos(i_i) * np.cos(i_f) + np.sin(i_i) * np.sin(i_f) * np.cos(Delta_Om))
+
+  # Handle the four cases for Delta_Om and Delta_i
+  if Delta_Om > 0 and Delta_i >= 0:  # FIRST CASE
+      cos_ui = (np.cos(alpha) * np.cos(i_i) - np.cos(i_f)) / (np.sin(alpha) * np.sin(i_i))
+      sin_ui = np.sin(Delta_Om) * np.sin(i_f) / np.sin(alpha)
+
+      cos_uf = (np.cos(i_i) - np.cos(alpha) * np.cos(i_f)) / (np.sin(alpha) * np.sin(i_f))
+      sin_uf = np.sin(i_i) * np.sin(Delta_Om) / np.sin(alpha)
+
+  elif Delta_Om >= 0 and Delta_i < 0:  # SECOND CASE
+      cos_ui = (np.cos(i_f) - np.cos(alpha) * np.cos(i_i)) / (np.sin(alpha) * np.sin(i_i))
+      sin_ui = -np.sin(i_f) * np.sin(Delta_Om) / np.sin(alpha)
+
+      cos_uf = (np.cos(alpha) * np.cos(i_f) - np.cos(i_i)) / (np.sin(alpha) * np.sin(i_f))
+      sin_uf = -np.sin(i_i) * np.sin(Delta_Om) / np.sin(alpha)
+
+  elif Delta_Om <= 0 and Delta_i > 0:  # THIRD CASE
+      cos_ui = (np.cos(alpha) * np.cos(i_i) - np.cos(i_f)) / (np.sin(alpha) * np.sin(i_i))
+      sin_ui = np.sin(Delta_Om) * np.sin(i_f) / np.sin(alpha)
+
+      cos_uf = (np.cos(i_i) - np.cos(alpha) * np.cos(i_f)) / (np.sin(alpha) * np.sin(i_f))
+      sin_uf = np.sin(i_i) * np.sin(Delta_Om) / np.sin(alpha)
+
+  elif Delta_Om < 0 and Delta_i <= 0:  # FOURTH CASE
+      cos_ui = (np.cos(i_f) - np.cos(alpha) * np.cos(i_i)) / (np.sin(alpha) * np.sin(i_i))
+      sin_ui = -np.sin(i_f) * np.sin(Delta_Om) / np.sin(alpha)
+
+      cos_uf = (np.cos(alpha) * np.cos(i_f) - np.cos(i_i)) / (np.sin(alpha) * np.sin(i_f))
+      sin_uf = -np.sin(i_i) * np.sin(Delta_Om) / np.sin(alpha)
+
+  # Compute the initial and final arguments of latitude
+  u_i = np.arctan2(sin_ui, cos_ui) % (2 * np.pi)  # Initial argument of latitude [rad]
+  u_f = np.arctan2(sin_uf, cos_uf) % (2 * np.pi)  # Final argument of latitude [rad]
+  #print(u_i, u_f)
+
+  # Maneuver is performed at the apocenter and line of nodes is aligned with semi-major axis
+
+  theta_f = np.pi # True anomaly at the maneuver point [rad]
+  
+  return u_i, u_f, theta_f
+
+# **********************************************************************************
+def changeOrbitalPlane_bielliptic(a_i, e_i, om_i, i_i, Om_i, a_f, e_f, i_f, Om_f, r_b, mu = 398600.433):
+    """
+    Perform a change of orbital plane combined with a bielliptic maneuver to change the orbit shape.
+    N.B. To perform the maneuver, the initial and final orbits must be coaxial with aligned pericenters.
+
+    INPUT:
+        a_i, e_i, i_i, Om_i, om_i, theta_0 -> initial orbital parameters:
+            a_i: semi-major axis [km]
+            e_i: eccentricity
+            i_i: inclination [rad]
+            Om_i: RAAN [rad]
+            om_0: argument of periapsis [rad]
+        a_f, e_f, i_f, Om_f -> desired orbital parameters:
+            a_f: semi-major axis [km]
+            e_f: eccentricity
+            i_f: inclination [rad]
+            Om_f: RAAN [rad]
+        r_b -> Tangency position of two elliptic transfer orbits (greater than r_f)
+
+    OUTPUT:
+        Delta_v1 -> Delta v to perform the first maneuver (N.B. with sign)
+        Delta_v2 -> Delta v to perform the second maneuver (N.B. with sign)
+        Delta_v3 -> Delta v to perform the third maneuver (N.B. with sign)
+        Delta_t -> time to perform the maneuver [s]
+        theta_f -> true anomaly in the target orbit [rad]
+
+    PARAMETER:
+        mu -> Earth planetary constant [km^3/s^2]
+    """
+    
+    # Implementation of the maneuver
+    rp_i = a_i * (1 - e_i) # Pericenter initial orbit
+    rp_f = a_f * (1 - e_f) # Pericenter target orbit
+
+    a_T_1 = (rp_i + r_b)/2 # Semi-major axis of the first transfer orbit
+    e_T_1 = (r_b - rp_i) / (r_b + rp_i) # Eccentricity of the first transfer orbit
+
+    # Step 1: First bielliptic burn
+    Delta_v1 = (
+        np.sqrt(2 * mu * (1 / rp_i - 1 / (2 * a_T_1))) -
+        np.sqrt(2 * mu * (1 / rp_i - 1/ (2 * a_i)))
+    )  
+
+    # Time to reach r_b in transfer orbit 1 (half orbit)
+    theta_i1 = 0
+    theta_f1 = np.pi  # apoapsis
+    Delta_t1 = timeOfFlight(a_T_1, e_T_1, theta_i1, theta_f1)
+
+    # Step 2: Second Burn at apoapsis of transfer orbit 1: change orbital plane and change of orbit shape
+    # Define orbital parameters at apoapsis of transfer orbit 1
+    i_T1 = i_i
+    Om_T1 = Om_i
+    om_T1 = om_i
+    theta_T1 = np.pi
+
+    # Compute the second transfer orbit parameters
+    # Call changeOrbitalPlane function to compute the change of argument of periapsis
+    _, om_T2, theta_T2 = findLineofNodes(i_T1, Om_T1, i_f, Om_f)
+
+    # Compute orbital shape for the second transfer orbit
+    e_T_2 = (r_b - rp_f) / (r_b + rp_f) # Eccentricity of the second transfer orbit
+    a_T_2 = (rp_f + r_b)/2 # Semi-major axis of the second transfer orbit
+
+    # Compute the combined maneuver cost using using Carnot theorem
+    # Angle between the two velocities
+    _, velocity_before = kep2car(a_T_1, e_T_1, i_T1, Om_T1, om_T1, theta_T1)
+    _, velocity_after = kep2car(a_T_2, e_T_2, i_f, Om_f, om_T2, theta_T2)
+
+    # Total cost of the second impulse
+    Delta_v2 = np.linalg.norm(velocity_after - velocity_before)
+
+    # Step 3: second bielliptic burn
+    Delta_v3 = (
+      np.sqrt(2 * mu * (1 / rp_f - 1 / (2 * a_f))) -
+      np.sqrt(2 * mu * (1 / rp_f - 1 / (2 * a_T_2)))
+    )  
+
+    # Time to reach r_pf in transfer orbit 2 (half orbit)
+    theta_f2 = 0  # periapsis
+    Delta_t2 = timeOfFlight(a_T_2, e_T_2, theta_T2, theta_f2)
+
+    # Total time
+    Delta_t = Delta_t1 + Delta_t2 
+
+    # Total cost of the maneuer
+    Delta_v = np.abs(Delta_v1) + np.abs(Delta_v2) + np.abs(Delta_v3)
+
+    return Delta_v, Delta_t, om_T2, theta_T2, theta_f2

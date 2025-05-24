@@ -139,37 +139,47 @@ plt.savefig(final_orbit_path)
 print(f"Final orbit plot saved to {final_orbit_path}")
 plt.close(fig)
 
-# Define output directories for both strategies
+
+# Comparison of the three strategies
+
+# Define output directories for all strategies
 strategy1_dir = './output/StandardStrategy1'
 strategy2_dir = './output/StandardStrategy2'
+bielliptic_dir = './output/BiellipticStrategy'
 
-# Load summary data for both strategies
+# Load summary data for all strategies
 strategy1_summary_path = os.path.join(strategy1_dir, 'maneuver_summary_B1.csv')
 strategy2_summary_path = os.path.join(strategy2_dir, 'maneuver_summary_B1.csv')
+bielliptic_summary_path = os.path.join(bielliptic_dir, 'maneuver_summary_B1.csv')
 
 if not os.path.exists(strategy1_summary_path):
     raise FileNotFoundError(f"Summary file for Strategy 1 not found: {strategy1_summary_path}")
 if not os.path.exists(strategy2_summary_path):
     raise FileNotFoundError(f"Summary file for Strategy 2 not found: {strategy2_summary_path}")
+if not os.path.exists(bielliptic_summary_path):
+    raise FileNotFoundError(f"Summary file for Bielliptic Strategy not found: {bielliptic_summary_path}")
 
 strategy1_data = pd.read_csv(strategy1_summary_path)
 strategy2_data = pd.read_csv(strategy2_summary_path)
+bielliptic_data = pd.read_csv(bielliptic_summary_path)
 
 # Extract total delta-v and total time cost
 strategy1_total_delta_v = strategy1_data['Total_Delta_v_km_s'].iloc[0]
 strategy2_total_delta_v = strategy2_data['Total_Delta_v_km_s'].iloc[0]
+bielliptic_total_delta_v = bielliptic_data['Total_Delta_v_km_s'].iloc[0]
 
 strategy1_total_time = strategy1_data['Total_Delta_t_s'].iloc[0]
 strategy2_total_time = strategy2_data['Total_Delta_t_s'].iloc[0]
+bielliptic_total_time = bielliptic_data['Total_Delta_t_s'].iloc[0]
 
 # Create bar plots
 os.makedirs(output_dir, exist_ok=True)
 
 # Plot 1: Total Delta-v Comparison
 plt.figure(figsize=(8, 6))
-strategies = ['Strategy 1', 'Strategy 2']
-delta_v_values = [strategy1_total_delta_v, strategy2_total_delta_v]
-plt.bar(strategies, delta_v_values, color=['blue', 'green'])
+strategies = ['Strategy 1', 'Strategy 2', 'Bielliptic']
+delta_v_values = [strategy1_total_delta_v, strategy2_total_delta_v, bielliptic_total_delta_v]
+plt.bar(strategies, delta_v_values, color=['blue', 'green', 'orange'])
 plt.title('Total Delta-v Comparison')
 plt.ylabel('Total Delta-v [km/s]')
 plt.savefig(os.path.join(output_dir, 'total_delta_v_comparison.png'))
@@ -177,12 +187,13 @@ print(f"Total Delta-v comparison plot saved to {os.path.join(output_dir, 'total_
 
 # Plot 2: Total Time Cost Comparison
 plt.figure(figsize=(8, 6))
-time_values = [strategy1_total_time, strategy2_total_time]
-plt.bar(strategies, time_values, color=['blue', 'green'])
+time_values = [strategy1_total_time, strategy2_total_time, bielliptic_total_time]
+plt.bar(strategies, time_values, color=['blue', 'green', 'orange'])
 plt.title('Total Time Cost Comparison')
 plt.ylabel('Total Time Cost [s]')
 plt.savefig(os.path.join(output_dir, 'total_time_cost_comparison.png'))
 print(f"Total Time Cost comparison plot saved to {os.path.join(output_dir, 'total_time_cost_comparison.png')}")
+
 
 #TO DO : 
 # Check of final orbit + general check
