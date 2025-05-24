@@ -15,6 +15,9 @@ from Orbitchanges import *
 output_dir = './output/StandardStrategy1'
 os.makedirs(output_dir, exist_ok=True)
 
+plot_3d_title = '3D Satellite Orbit (ECI Frame)'
+plot_2d_title = '2D Proj. of Sat Orbit in the EP (ECI Frame)'
+
 # Read the input CSV
 input_path = r'./input/orbit_data.csv'
 df = pd.read_csv(input_path)
@@ -159,7 +162,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -238,7 +241,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -335,7 +338,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -412,7 +415,7 @@ img_name_2D = 'Standard_strategy_maneuver_1_2D.pdf'
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_title('2D Orbit around Earth', fontsize=14)
+ax.set_title(plot_2d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)

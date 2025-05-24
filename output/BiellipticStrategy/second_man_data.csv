@@ -1,2 +1,2 @@
-optimal_r_b_km,Delta_v1_km_s,Total_Delta_v_km_s,a_f,e_f,Om_f,i_f,om_transition,theta_maneuver_2
+optimal_r_b_km,Delta_v1_km_s,Total_Delta_t_s,a_f,e_f,Om_f,i_f,om_transition,theta_maneuver_2
 121840.0,4.549223362871482,172792.4541295478,15230.0,0.2232,2.636,1.077,0.8445212527088111,0

@@ -17,6 +17,9 @@ os.makedirs(output_dir, exist_ok=True)
 input_path = './input/orbit_data.csv'
 df = pd.read_csv(input_path)
 
+plot_3d_title = '3D Satellite Orbit (ECI Frame)'
+plot_2d_title = '2D Proj. of Sat Orbit in the EP (ECI Frame)'
+
 #Select orbid ID
 orbit_id = 'B1'
 
@@ -68,7 +71,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -154,7 +157,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -350,7 +353,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
@@ -447,7 +450,7 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
 ticks = [-1.5e4, -1e4, -0.5e4, 0, 0.5e4, 1e4, 1.5e4, 2e4]
 ax.set_xticks(ticks)
@@ -524,6 +527,10 @@ ax.plot(X_trans_4_bis, Y_trans_4_bis, Z_trans_4_bis, color="orange", linewidth=1
 ax.plot(X_f, Y_f, Z_f, color="orange", linewidth=1.5, label='Final orbit')
 ax.legend()
 
+ax.set_xlim(-1.5e4, 1.5e4)
+ax.set_ylim(-1.5e4, 1.5e4)
+ax.set_zlim(-1.5e4, 1.5e4)
+
 # Save the 3D plot image
 save_path = os.path.join(output_dir, img_name)
 plt.savefig(save_path)
@@ -536,7 +543,7 @@ img_name_2D = 'Standard_strategy_maneuver_2_2D.pdf'
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_title('2D Orbit around Earth', fontsize=14)
+ax.set_title(plot_2d_title, fontsize=14)
 
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax.set_xticks(ticks)
