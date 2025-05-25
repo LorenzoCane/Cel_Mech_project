@@ -17,6 +17,9 @@ os.makedirs(output_dir, exist_ok=True)
 input_path = './input/orbit_data.csv'
 df = pd.read_csv(input_path)
 
+plot_3d_title = '3D Satellite Orbit (ECI Frame)'
+plot_2d_title = '2D Proj. of Sat Orbit in the EP (ECI Frame)'
+
 #Select orbid ID
 orbit_id = 'B1'
 
@@ -313,13 +316,17 @@ ax.set_box_aspect([1, 1, 1])
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
 ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+ax.set_title(plot_3d_title, fontsize=14)
 
-ticks = [-1.5e4, -1e4, -0.5e4, 0, 0.5e4, 1e4, 1.5e4, 2e4]
+ax.set_xlim(-9e4, 9e4)
+ax.set_ylim(-9e4, 9e4)
+ax.set_zlim(-9e4, 9e4)
+'''
+ticks = np.linspace(-3.5e4, 3.5e4, 6)
 ax.set_xticks(ticks)
 ax.set_yticks(ticks)
 ax.set_zticks(ticks)
-
+'''
 earth_3D(ax)
 
 # Plot initial orbit (before maneuver)
@@ -388,11 +395,13 @@ img_name_2D = 'Bielliptic_strategy_maneuver_2D.pdf'
 fig, ax = plt.subplots(figsize=(8, 8))
 ax.set_xlabel('X [km]', fontsize=12)
 ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_title('2D Orbit around Earth', fontsize=14)
+ax.set_title(plot_2d_title, fontsize=14)
 ax.set_aspect('equal')
+'''
 ticks = [-1.5e4, -1e4, -0.5e4, 0, 0.5e4, 1e4, 1.5e4, 2e4]
 ax.set_xticks(ticks)
 ax.set_yticks(ticks)
+'''
 ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
 earth_2D(ax, color='blue', marker='o', size=200)
 

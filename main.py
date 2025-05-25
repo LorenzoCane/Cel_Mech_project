@@ -67,7 +67,7 @@ ax_3d.set_box_aspect([1, 1, 1])
 ax_3d.set_xlabel('X [km]', fontsize=12)
 ax_3d.set_ylabel('Y [km]', fontsize=12)
 ax_3d.set_zlabel('Z [km]', fontsize=12)
-ax_3d.set_title('Initial Orbit (3D)', fontsize=14)
+ax_3d.set_title('Initial Orbit (3D - ECI frame)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax_3d.set_xticks(ticks)
 ax_3d.set_yticks(ticks)
@@ -83,13 +83,13 @@ plotOrbit(initial_orbit, theta_mark=True, ax=ax_3d, mark_color="red", line_color
 ax_2d.grid(True)
 ax_2d.set_xlabel('X [km]', fontsize=12)
 ax_2d.set_ylabel('Y [km]', fontsize=12)
-ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
+ax_2d.set_title('Initial Orbit (2D-Projection ECI frame)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax_2d.set_xticks(ticks)
 ax_2d.set_yticks(ticks)
 earth_2D(ax_2d)
 plotOrbit2D(initial_orbit, theta_mark=True, ax=ax_2d, mark_color="red", line_color="blue")
-ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
+ax_2d.set_title('Initial Orbit (2D-Projection ECI frame)', fontsize=14)
 
 # Save the initial orbit figure
 initial_orbit_path = os.path.join(output_dir, 'initial_orbit.pdf')
@@ -108,7 +108,7 @@ ax_3d.set_box_aspect([1, 1, 1])
 ax_3d.set_xlabel('X [km]', fontsize=12)
 ax_3d.set_ylabel('Y [km]', fontsize=12)
 ax_3d.set_zlabel('Z [km]', fontsize=12)
-ax_3d.set_title('Final Orbit (3D)', fontsize=14)
+ax_3d.set_title('Final Orbit (3D - ECI frame)', fontsize=14)
 ax_3d.set_xticks(ticks)
 ax_3d.set_yticks(ticks)
 ax_3d.set_zticks(ticks)
@@ -123,14 +123,13 @@ plotOrbit(final_orbit, theta_mark=True, ax=ax_3d, mark_color="green", line_color
 ax_2d.grid(True)
 ax_2d.set_xlabel('X [km]', fontsize=12)
 ax_2d.set_ylabel('Y [km]', fontsize=12)
-ax_2d.set_title('Initial Orbit (2D)', fontsize=14)
+ax_2d.set_title('Initial Orbit (2D-Projection ECI frame)', fontsize=14)
 ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
 ax_2d.set_xticks(ticks)
 ax_2d.set_yticks(ticks)
 earth_2D(ax_2d)
-earth_2D(ax_2d)
 plotOrbit2D(final_orbit, theta_mark=True, ax=ax_2d, mark_color="green", line_color="orange")
-ax_2d.set_title('Final Orbit (2D)', fontsize=14)
+ax_2d.set_title('Final Orbit (2D-Projection ECI frame)', fontsize=14)
 
 # Save the final orbit figure
 final_orbit_path = os.path.join(output_dir, 'final_orbit.pdf')
@@ -193,8 +192,3 @@ plt.title('Total Time Cost Comparison')
 plt.ylabel('Total Time Cost [s]')
 plt.savefig(os.path.join(output_dir, 'total_time_cost_comparison.png'))
 print(f"Total Time Cost comparison plot saved to {os.path.join(output_dir, 'total_time_cost_comparison.png')}")
-
-
-#TO DO : 
-# Check of final orbit + general check
-# Try a strategy with bielliptic + change orbital plane + bielliptic + changeperiapsisArg
