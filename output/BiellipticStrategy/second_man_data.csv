@@ -1,2 +1,2 @@
-optimal_r_b_km,Delta_v1_km_s,Total_Delta_v_km_s,a_f,e_f,Om_f,i_f,om_transition,theta_maneuver_2
-121840.0,4.549223362871482,172792.4541295478,15230.0,0.2232,2.636,1.077,0.8445212527088111,0
+optimal_r_b_km,cost2_km_s,cost_bielliptic1_km_s,cost_bielliptic2_km_s,cost_bielliptic3_km_s,Total_Delta_t_km_s,Delta_t_before_bielliptic_s,Delta_t_bielliptic1_s,Delta_t_bielliptic2_s,startbielliptic_maneuver_rad,a_t1_km,e_t1,theta_apoapsis_rad,a_t2_km,e_t2,om_transition_2_rad,Om_f,i_f,theta_second_burn_rad,a_f,e_f,Om_f_rad,i_f_rad
+121840.0,4.549223362871482,2.2365122449375407,0.8952714821598338,-1.417439635774107,172792.4541295478,4834.514157174341,81979.3825289642,85978.55744340929,0,64746.4212972208,0.8818028480784916,3.141592653589793,66835.332,0.8229878771306172,0.8445212527088111,2.636,1.077,3.141592653589793,15230.0,0.2232,2.636,1.077

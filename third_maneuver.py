@@ -43,7 +43,7 @@ theta_f = row['theta_fin'] # True anomaly [rad]
 
 
 #****************************************************************************************************
-# Secant strategy = bielliptic transfer and change of plane at higher distance
+# Bielliptic strategy = bielliptic transfer and change of plane at higher distance
 
 #1st maneuvers : Move to higher altitude orbit
 out_file = 'first_man_data.csv'
@@ -76,8 +76,10 @@ else:
 maneuver_data = {
     'cost2_km_s':      Delta_v_1,
     'Delta_t_1_s':     Delta_t_1,
-    'om_transition_1__rad':        om_transition_1,
-    'theta_maneuver_1_rad':     theta_maneuver_1,  
+    'theta_before_maneuver_1_rad':  theta_change_periapsis1,
+    'om_initial_rad':  om_i,
+    'om_transition_1_rad':        om_transition_1,
+    'theta_after_maneuver_1_rad':     theta_maneuver_1,  
 }
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
@@ -104,7 +106,7 @@ total_delta_v_bielliptic = []  # Store total delta-v
 total_delta_t_bielliptic = []  # Store total delta-t 
 
 for r_b in r_b_array:
-    Delta_v, Delta_t, _, _, _ = changeOrbitalPlane_bielliptic(a_i, e_i, om_transition_1, i_i, OM_i, a_f, e_f, i_f, OM_f, r_b)
+    Delta_v, _, _, _, Delta_t, _, _,  _, _, _ = changeOrbitalPlane_bielliptic(a_i, e_i, om_transition_1, i_i, OM_i, a_f, e_f, i_f, OM_f, r_b)
     total_delta_v_bielliptic.append(Delta_v)
     total_delta_t_bielliptic.append(Delta_t)
 
@@ -142,24 +144,69 @@ optimal_r_b = r_b_array[optimal_r_b_index]
 min_delta_v_bielliptic = total_delta_v_bielliptic[optimal_r_b_index]
 
 # Perform the maneuver with the optimal r_b
-Delta_v_2, Delta_t_bielliptic, om_transition_2, theta_second_burn, theta_after_bielliptic = changeOrbitalPlane_bielliptic(a_i, e_i, om_transition_1, i_i, OM_i,
+Delta_v_2, Delta_v_bielliptic1, Delta_v_bielliptic2, Delta_v_bielliptic3, Delta_t_bielliptic, Delta_t_bielliptic1, Delta_t_bielliptic2, om_transition_2, theta_second_burn, theta_after_bielliptic = changeOrbitalPlane_bielliptic(a_i, e_i, om_transition_1, i_i, OM_i,
                                                                                                     a_f, e_f, i_f, OM_f, optimal_r_b)
-#print(om_transition_1)
-#print(om_transition_2)
+
+
+# Save the optimal bielliptic change of plane maneuver data
+bielliptic_maneuver_data = {
+    'optimal_r_b_km': optimal_r_b,
+    'Delta_v1_km_s': Delta_v_bielliptic1,
+    'Delta_v2_km_s': Delta_v_bielliptic2,
+    'Delta_v3_km_s': Delta_v_bielliptic3,
+    'Total_Delta_v_km_s': min_delta_v_bielliptic,
+    'Delta_t_s': Delta_t_bielliptic,
+    'Delta_t_bielliptic1_s': Delta_t_bielliptic1,
+    'Delta_t_bielliptic2_s': Delta_t_bielliptic2,
+}
+
+bielliptic_data_path = os.path.join(output_dir, 'optimal_bielliptic_change _of_plane_maneuver.csv')
+pd.DataFrame([bielliptic_maneuver_data]).to_csv(bielliptic_data_path, index=False)
+print(f'Optimal bielliptic change of plane maneuver data saved to {bielliptic_data_path}')
+
+
 Delta_t_2 = Delta_t_bielliptic + Delta_t_pre_bielliptic  # Total time cost for the bielliptic transfer
 
-#Save data for late
+# First bielliptic transfer orbit to r_b
+r_p1 = a_i * (1 - e_i)
+a_t1 = (r_p1 + optimal_r_b) / 2
+e_t1 = (optimal_r_b - r_p1) / (optimal_r_b + r_p1)
+start_bielliptic_maneuver = theta_before_bielliptic  # Start of the bielliptic maneuver at r_p1
+theta_apoapsis = theta_second_burn  # Half orbit to r_b
+
+# Second bielliptic transfer orbit from r_b to final orbit 
+rp_f = a_f * (1 - e_f)  # Final periapsis
+e_t2 = (optimal_r_b - rp_f)/(optimal_r_b + rp_f) # Eccentricity of the second transfer orbit
+a_t2 = (rp_f + optimal_r_b) / 2 # Semi-major axis of the second transfer orbit
+end_bielliptic_maneuver = theta_after_bielliptic  # Half orbit from r_b to r_p2
+
+#Save data for orbit details
 # Save the bielliptic maneuver data
 bielliptic_maneuver_data = {
     'optimal_r_b_km': optimal_r_b,
-    'Delta_v1_km_s':Delta_v_2,
-    'Total_Delta_v_km_s': Delta_t_2,
+    'cost2_km_s':Delta_v_2,
+    'cost_bielliptic1_km_s': Delta_v_bielliptic1,
+    'cost_bielliptic2_km_s': Delta_v_bielliptic2,
+    'cost_bielliptic3_km_s': Delta_v_bielliptic3,
+    'Total_Delta_t_km_s': Delta_t_2,
+    'Delta_t_before_bielliptic_s': Delta_t_pre_bielliptic,
+    'Delta_t_bielliptic1_s': Delta_t_bielliptic1,
+    'Delta_t_bielliptic2_s': Delta_t_bielliptic2,
+    'startbielliptic_maneuver_rad': start_bielliptic_maneuver,
+    'a_t1_km': a_t1,
+    'e_t1': e_t1,
+    'theta_apoapsis_rad': theta_apoapsis,
+    'a_t2_km': a_t2,
+    'e_t2': e_t2,
+    'om_transition_2_rad': om_transition_2,
+    'Om_f': OM_f, 
+    'i_f': i_f, 
+    'theta_second_burn_rad': theta_second_burn,
     'a_f': a_f, 
     'e_f': e_f,
-    'Om_f': OM_f, 
-    'i_f': i_f,
-    'om_transition': om_transition_2, 
-    'theta_maneuver_2': theta_after_bielliptic,
+    'om_transition_2_rad': om_transition_2,
+    'Om_f_rad': OM_f,
+    'i_f_rad': i_f,
 }
 
 df_out = pd.DataFrame([bielliptic_maneuver_data])
@@ -193,21 +240,26 @@ else:
     Delta_t_3 = Delta_t_B
     theta_change_periapsis2 = theta_B
 
+# Wait until it reaches theta_f
+Delta_t_4 = timeOfFlight(a_f, e_f, theta_maneuver_2, theta_f) # Time to reach the final position [s]
+
 #Save data for late
 maneuver_data = {
     'cost3_km_s':      Delta_v_3,
     'Delta_t_3_s':     Delta_t_3,
+    'theta_before_maneuver_2_rad':  theta_change_periapsis2,
+    'om_transition_2_rad': om_transition_2,
     'om_final':        om_f,
-    'theta_maneuver_2_rad':  theta_maneuver_2,  
+    'theta_after_maneuver_2_rad':  theta_maneuver_2,  
+    'Delta_t_4_s':     Delta_t_4,
+    'theta_final_rad': theta_f
 }
+
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
 df_out.to_csv(out_path, index=False)
 
 print(f"Third Maneuver data saved to {out_path}")
-
-# Wait until it reaches theta_f
-Delta_t_4 = timeOfFlight(a_f, e_f, theta_maneuver_2, theta_f) # Time to reach the final position [s]
 
 
 #*********************************************************************************************
@@ -283,21 +335,12 @@ X_periapsis, Y_periapsis, Z_periapsis = plotOrbit(orbit_after_periapsis_change, 
                                                   mark_label="")
 
 # Plot first bielliptic transfer (to r_b, with plane change at apoapsis)
-r_p1 = a_i * (1 - e_i)
-a_t1 = (r_p1 + optimal_r_b) / 2
-e_t1 = (optimal_r_b - r_p1) / (optimal_r_b + r_p1)
-start_bielliptic_maneuver = 0
-theta_apoapsis = np.pi  # Half orbit to r_b
 bielliptic_1 = np.array([a_t1, e_t1, i_i, OM_i, om_transition_1, start_bielliptic_maneuver])
 X_bielliptic1, Y_bielliptic1, Z_bielliptic1 = plotOrbit(bielliptic_1, deltaTh=(theta_apoapsis - start_bielliptic_maneuver) % (2 * np.pi),  # Half orbit to r_b
                                                         theta_mark=True, ax=ax, mark_color="gold", line_color="magenta", mark_type=".",
                                                         mark_label="")
 
 # Plot second bielliptic transfer (from r_b to final orbit, with new inclination and RAAN)
-rp_f = a_f * (1 - e_f)  # Final periapsis
-e_t2 = (optimal_r_b - rp_f)/(optimal_r_b + rp_f) # Eccentricity of the second transfer orbit
-a_t2 = (rp_f + optimal_r_b) / 2 # Semi-major axis of the second transfer orbit
-end_bielliptic_maneuver = 0  # Half orbit from r_b to r_p2
 bielliptic_2 = np.array([a_t2, e_t2, i_f, OM_f, om_transition_2, theta_second_burn])
 X_bielliptic2, Y_bielliptic2, Z_bielliptic2 = plotOrbit(bielliptic_2, deltaTh=(end_bielliptic_maneuver - theta_second_burn) % (2 * np.pi),  # Half orbit from r_b to r_p2
                                                     theta_mark=True, ax=ax, mark_color="gold", line_color="darkviolet", mark_type=".",

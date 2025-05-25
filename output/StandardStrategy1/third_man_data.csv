@@ -1,2 +1,2 @@
-cost3_km_s,Delta_t_3_s,a_final,e_final,final_theta_anom
-1.476135753891163,8215.990927403252,15230.0,0.2232,3.141592653589793
+cost3_km_s,cost_Hohmann_1_km_s,cost_Hohmann_2_km_s,Delta_t_3_s_total,Delta_t_preHohmann_s,Delta_t_Hohmann_s,theta_pre_Hohmann_rad,a_Hohmann_km,e_Hohmann,final_theta_anom,a_final,e_final,Delta_t_4_s,theta_f_rad
+1.476135753891163,0.9292135363617176,0.5469222175294455,8215.990927403252,720.0174834221953,7495.973443981057,0,13141.089297220797,0.417640165031061,3.141592653589793,15230.0,0.2232,13717.982946844628,1.96

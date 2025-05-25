@@ -107,11 +107,12 @@ print(f'First Maneuver plot saved in {save_path}')
 maneuver_data = {
     'cost1_km_s':      Delta_v_1,
     'Delta_t_1_s':         Delta_t_1,
+    'theta_before_maneuver_1_rad': theta_maneuver_1,
     'final_inclination_rad': i_f,
     'final_RAAN_rad':        OM_f,
     'om_transition_rad':     om_transition,
-    'theta_maneuver_1_rad':  theta_maneuver_1
 }
+
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
 df_out.to_csv(out_path, index=False)

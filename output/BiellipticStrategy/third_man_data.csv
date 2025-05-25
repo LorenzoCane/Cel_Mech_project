@@ -1,2 +1,2 @@
-cost3_km_s,Delta_t_3_s,om_final,theta_maneuver_2_rad
-0.5869743758027086,495.6145787763958,1.351,6.029945933533992
+cost3_km_s,Delta_t_3_s,theta_before_maneuver_2_rad,om_transition_2_rad,om_final,theta_after_maneuver_2_rad,Delta_t_4_s,theta_final_rad
+0.5869743758027086,495.6145787763958,0.25323937364559446,0.8445212527088111,1.351,6.029945933533992,5157.182620717422,1.96
