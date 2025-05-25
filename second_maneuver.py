@@ -51,62 +51,15 @@ out_file = 'first_man_data.csv'
 
 Delta_v_1, om_transition, theta_maneuver_1, Delta_t_1 = changeOrbitalPlane(a_i, e_i, i_i, OM_i, om_i, theta_i, i_f, OM_f)
 
-'''
-print("Cost of the Maneuver:", Delta_v_1, "km/s")
-print("Time to perform the maneuver:", Delta_t_1, "s")
-print("Final inclination:", i_f, "rad")
-print("Final RAAN: ", OM_f, "rad")
-print("Current argument of periapsis:", om_transition, "rad")
-print("Current true anomaly:", theta_maneuver_1, "rad")
-'''
-
-#Plot  initial orbit and the FIRST transition orbit 
-
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
 # -----------------------------
-# Plot initial orbit (before maneuver)
-initial_orbit = np.array([a_i, e_i, i_i, OM_i, om_i, theta_i])
-X_i, Y_i, Z_i = plotOrbit(initial_orbit, theta_mark=True, ax=ax, mark_color = "red")
-
-# Plot Fisrt transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_i, Y_i, Z_i, color='orange', linewidth=1.5, label='Initial orbit')
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color = "blue", linewidth = 1.5, label ='First transition orbit')
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'First Maneuver plot saved in {save_path}')
-
-#Save data for late
+#Save data for orbit details
 maneuver_data = {
     'cost1_km_s':      Delta_v_1,
     'Delta_t_1_s':         Delta_t_1,
+    'theta_before_maneuver_1_rad': theta_maneuver_1,
     'final_inclination_rad': i_f,
     'final_RAAN_rad':        OM_f,
     'om_transition_rad':     om_transition,
-    'theta_maneuver_1_rad':  theta_maneuver_1
 }
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
@@ -139,57 +92,15 @@ else:
     Delta_v_2, om_final, theta_maneuver_2 = changePeriapsisArg(a_i, e_i, om_transition, Delta_om, theta_B)
     Delta_t_2 = Delta_t_B
     theta_change_periapsis = theta_B
-'''
-print("Cost of the Maneuver:", Delta_v_2, "km/s")
-print("Time to perform the maneuver:", Delta_t_2, "s")
-print("Final argument of periapsis:", om_final, "rad")
-print("Final true anomaly:", theta_maneuver_2, "rad")
-'''
 
-
-# Plot the FIRST transition orbit and the SECOND transition orbit 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# Plot FIRST transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot SECOND transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_maneuver_2])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color='orange', linewidth=1.5, label='First transition orbit')
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color = "blue", linewidth = 1.5, label ='Second transition orbit')
-
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Second Maneuver plot saved in {save_path}')
-
-#Save data for late
+#Save data for orbit details
 maneuver_data = {
     'cost2_km_s':      Delta_v_2,
     'Delta_t_2_s':     Delta_t_2,
+    'theta_before_maneuver_2_rad': theta_change_periapsis,
+    'om_transition_rad': om_transition,
     'om_final':        om_final,
-    'theta_maneuver_2_rad':  theta_maneuver_2
+    'theta_after_maneuver_2_rad':  theta_maneuver_2
 }
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
@@ -210,7 +121,7 @@ Delta_t_pre_Bielliptic = timeOfFlight(a_i, e_i, theta_maneuver_2, theta_pre_biel
 hohmann_data_path = './output/StandardStrategy1/third_man_data.csv'
 hohmann_data = pd.read_csv(hohmann_data_path)
 Delta_v_Hohmann = hohmann_data['cost3_km_s'].iloc[0]  # Extract the Hohmann transfer cost
-Delta_t_Hohmann = hohmann_data['Delta_t_3_s'].iloc[0] # Extract the Hohmann time cost
+Delta_t_Hohmann = hohmann_data['Delta_t_3_s_total'].iloc[0] # Extract the Hohmann time cost
 
 # Plot Bielliptic cost depending on the choice of r_b
 r_b_array = np.linspace(a_f * (1-e_f), 11 * a_f, 5000)  # from r_f to 10*r_f (wide range)
@@ -218,7 +129,7 @@ total_delta_v_bielliptic = []  # Store total delta-v
 total_delta_t_bielliptic = []  # Store total delta-t 
 
 for r_b in r_b_array:
-    Delta_v1_bielliptic, Delta_v2_bielliptic, Delta_v3_bielliptic, Delta_t_bielliptic, _ = changeOrbitShape_bielliptic(
+    Delta_v1_bielliptic, Delta_v2_bielliptic, Delta_v3_bielliptic, Delta_t_bielliptic, _, _, _ = changeOrbitShape_bielliptic(
         a_i, e_i, om_final, a_f, e_f, om_f, r_b
     )
     total_delta_v_bielliptic.append(
@@ -263,11 +174,11 @@ optimal_r_b = r_b_array[optimal_r_b_index]
 min_delta_v_bielliptic = total_delta_v_bielliptic[optimal_r_b_index]
 
 # Perform the bielliptic maneuver with the optimal r_b
-Delta_v1_bielliptic, Delta_v2_bielliptic, Delta_v3_bielliptic, Delta_t_bielliptic, theta_after_bielliptic = changeOrbitShape_bielliptic(
+Delta_v1_bielliptic, Delta_v2_bielliptic, Delta_v3_bielliptic, Delta_t_bielliptic, Deltat_bielliptic1, Deltat_bielliptic2, theta_after_bielliptic = changeOrbitShape_bielliptic(
     a_i, e_i, om_final, a_f, e_f, om_f, optimal_r_b
 )
 
-# Save the bielliptic maneuver data
+# Save the optimal bielliptic maneuver data
 bielliptic_maneuver_data = {
     'optimal_r_b_km': optimal_r_b,
     'Delta_v1_km_s': Delta_v1_bielliptic,
@@ -275,7 +186,8 @@ bielliptic_maneuver_data = {
     'Delta_v3_km_s': Delta_v3_bielliptic,
     'Total_Delta_v_km_s': min_delta_v_bielliptic,
     'Delta_t_s': Delta_t_bielliptic,
-    'theta_f_rad': theta_after_bielliptic,
+    'Deltat_bielliptic1_s': Deltat_bielliptic1,
+    'Deltat_bielliptic2_s': Deltat_bielliptic2
 }
 
 bielliptic_data_path = os.path.join(output_dir, 'optimal_bielliptic_maneuver.csv')
@@ -293,101 +205,50 @@ comparison_data_path = os.path.join(output_dir, 'bielliptic_vs_hohmann_data.csv'
 pd.DataFrame(comparison_data).to_csv(comparison_data_path, index=False)
 print(f'Comparison data saved to {comparison_data_path}')
 
-# Plot the SECOND transition orbit and the FINAL orbit for the bielliptic strategy
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth (Bielliptic Strategy)', fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# Plot SECOND transition orbit (after first bielliptic maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, 0])  # Assuming theta = 0 for the first maneuver
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color="red")
-
-# Plot FINAL orbit (after second bielliptic maneuver)
-current_orbit = np.array([a_f, e_f, i_f, OM_f, om_f, theta_after_bielliptic])
-X_f, Y_f, Z_f = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color="green")
-
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color='orange', linewidth=1.5, label='Second transition orbit')
-ax.plot(X_f, Y_f, Z_f, color="blue", linewidth=1.5, label='Final orbit')
-ax.legend()
-
-# Save the plot
-bielliptic_plot_path = os.path.join(output_dir, 'bielliptic_transition_orbits.png')
-plt.savefig(bielliptic_plot_path)
-print(f'Bielliptic transition orbits plot saved in {bielliptic_plot_path}')
-
 Delta_v_3 = Delta_v1_bielliptic + Delta_v2_bielliptic # Total Cost of the Bielliptic transfer
 Delta_t_3 = Delta_t_pre_Bielliptic + Delta_t_bielliptic # Total time cost for the Bielliptic transfer
 
 # Wait until it reaches theta_f
 Delta_t_4 = timeOfFlight(a_f, e_f, theta_after_bielliptic, theta_f) # Time to reach the final position [s]
-'''
-print("Cost of the Maneuver:", Delta_v_3, "km/s")
-print("Time to perform the maneuver:", Delta_t_3, "s")
-print("Final semi-major axis:", a_f, "km")
-print("Final eccentricity:", e_f)
-print("Final true anomaly:", theta_after_Hohmann, "rad")
-'''
 
-#Plot the SECOND transition orbit and the FINAL orbit
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
+# Orbital element of first transfer ellipse
+# Radius at periapsis of initial orbit
+r_p1 = a_i * (1 - e_i)
+# First transfer ellipse: from r_p1 to r_b
+a_t1 = (r_p1 + optimal_r_b) / 2
+e_t1 = (optimal_r_b - r_p1) / (optimal_r_b + r_p1)
 
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
+# Theta second impulse in the bielliptic maneuver
+theta_apoapsis = np.pi  # Half orbit to r_b
 
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# -----------------------------
-# Plot SECOND transition orbit (with initial bielliptic maneuver point)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_pre_bielliptic])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot FINAL orbit (with second bielliptic maneuver point)
-current_orbit = np.array([a_f, e_f, i_f, OM_f, om_f, theta_after_bielliptic])
-X_f_0, Y_f_0, Z_f_0 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color='orange', linewidth=1.5, label='Second transition orbit')
-ax.plot(X_f_0, Y_f_0, Z_f_0, color = "blue", linewidth = 1.5, label ='Final orbit')
-
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Third Maneuver plot saved in {save_path}')
-
-#Save data for late
+# Orbital element of second transfer ellipse
+# Radius at periapsis of final orbit
+r_p2 = a_f * (1 - e_f)
+# Second transfer ellipse: from r_b to r_p2
+a_t2 = (optimal_r_b + r_p2) / 2
+e_t2 = (optimal_r_b - r_p2) / (r_p2 + optimal_r_b)
+# -----------------------
+#Save data for orbit details
 maneuver_data = {
     'cost3_km_s':      Delta_v_3,
-    'Delta_t_3_s':     Delta_t_3,
+    'cost_bielliptic_1_km_s': Delta_v1_bielliptic,
+    'cost_bielliptic_2_km_s': Delta_v2_bielliptic,
+    'cost_bielliptic_3_km_s': Delta_v3_bielliptic,
+    'Delta_t_3_s_total':     Delta_t_3,
+    'Delta_t_pre_Bielliptic_s': Delta_t_pre_Bielliptic,
+    'Delta_t_bielliptic1_s': Deltat_bielliptic1,
+    'Delta_t_bielliptic2_s': Deltat_bielliptic2,
+    'theta_pre_bielliptic_rad': theta_pre_bielliptic,
+    'a_t1':         a_t1,
+    'e_t1':         e_t1,
+    'theta_apoapsis_rad': theta_apoapsis,
+    'a_t2':         a_t2,
+    'e_t2':         e_t2,
+    'final_theta_anom': theta_after_bielliptic,
     'a_final':         a_f,
     'e_final':         e_f,
-    'final_theta_anom': theta_after_bielliptic
+    'Delta_t_4_s': Delta_t_4,
+    'theta_f_rad': theta_f
 }
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
@@ -475,26 +336,11 @@ X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(transition_orbit_2, deltaTh=(theta_p
                                             mark_label="")
 
 # Plot Bielliptic transfer orbits
-
-# Orbital element of first transfer ellipse
-# Radius at periapsis of initial orbit
-r_p1 = a_i * (1 - e_i)
-# First transfer ellipse: from r_p1 to r_b
-a_t1 = (r_p1 + optimal_r_b) / 2
-e_t1 = (optimal_r_b - r_p1) / (optimal_r_b + r_p1)
-
 # First transfer orbit (to intermediate radius r_b)
 transfer_orbit_1 = np.array([a_t1, e_t1, i_f, OM_f, om_final, theta_pre_bielliptic])
 X_trans_3, Y_trans_3, Z_trans_3 = plotOrbit(transfer_orbit_1, deltaTh=np.pi,  # Half orbit to r_b
                                             theta_mark=True, ax=ax, mark_color="Gold", line_color="magenta", mark_type=".",
                                             mark_label="")
-
-# Orbital element of second transfer ellipse
-# Radius at periapsis of final orbit
-r_p2 = a_f * (1 - e_f)
-# Second transfer ellipse: from r_b to r_p2
-a_t2 = (optimal_r_b + r_p2) / 2
-e_t2 = (optimal_r_b - r_p2) / (r_p2 + optimal_r_b)
 
 # Second transfer orbit (from r_b to final orbit)
 transfer_orbit_2 = np.array([a_t2, e_t2, i_f, OM_f, om_f, np.pi])
