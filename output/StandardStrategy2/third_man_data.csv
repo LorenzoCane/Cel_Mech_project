@@ -1,2 +1,2 @@
-cost3_km_s,Delta_t_3_s,a_final,e_final,final_theta_anom
-1.4756705140703517,17560.720706595206,15230.0,0.2232,0
+cost3_km_s,cost_bielliptic_1_km_s,cost_bielliptic_2_km_s,cost_bielliptic_3_km_s,Delta_t_3_s_total,Delta_t_pre_Bielliptic_s,Delta_t_bielliptic1_s,Delta_t_bielliptic2_s,theta_pre_bielliptic_rad,a_t1,e_t1,theta_apoapsis_rad,a_t2,e_t2,final_theta_anom,a_final,e_final,Delta_t_4_s,theta_f_rad
+1.4756705140703517,0.9286208148829163,0.5470496991874354,0.0005906443138039563,17560.720706595206,720.0174834221953,7492.199140580166,9348.504082592846,0,13136.677806922737,0.41744460000315176,3.141592653589793,15225.588509701938,0.22297492852500586,0,15230.0,0.2232,4665.24477065833,1.96

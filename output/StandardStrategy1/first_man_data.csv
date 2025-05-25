@@ -1,2 +1,2 @@
-cost1_km_s,Delta_t_1_s,final_inclination_rad,final_RAAN_rad,om_transition_rad,theta_maneuver_1_rad
-8.083513992741853,1744.357307844774,1.077,2.636,6.236506326546268,4.032792886931922
+cost1_km_s,Delta_t_1_s,theta_before_maneuver_1_rad,final_inclination_rad,final_RAAN_rad,om_transition_rad
+8.083513992741853,1744.357307844774,4.032792886931922,1.077,2.636,6.236506326546268

@@ -50,63 +50,14 @@ theta_f = row['theta_fin'] # True anomaly [rad]
 # Standard strategy 1 = indipendent and consecutive maneuvers
 
 #1st maneuvers : Change orbital plane
-img_name = 'first_man.pdf'
 out_file = 'first_man_data.csv'
 
 Delta_v_1, om_transition, theta_maneuver_1, Delta_t_1 = changeOrbitalPlane(a_i, e_i, i_i, OM_i, om_i, theta_i, i_f, OM_f)
 
-'''
-print("Cost of the Maneuver:", Delta_v_1, "km/s")
-print("Time to perform the maneuver:", Delta_t_1, "s")
-print("Final inclination:", i_f, "rad")
-print("Final RAAN: ", OM_f, "rad")
-print("Current argument of periapsis:", om_transition, "rad")
-print("Current true anomaly:", theta_maneuver_1, "rad")
-'''
-
-"""
-#Plot  initial orbit and the FIRST transition orbit 
-
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title('3D Orbit around Earth', fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-"""
 
 # -----------------------------
-"""
-# Plot initial orbit (before maneuver)
-initial_orbit = np.array([a_i, e_i, i_i, OM_i, om_i, theta_i])
-X_i, Y_i, Z_i = plotOrbit(initial_orbit, theta_mark=True, ax=ax, mark_color = "red")
 
-# Plot Fisrt transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_i, Y_i, Z_i, color='orange', linewidth=1.5, label='Initial orbit')
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color = "blue", linewidth = 1.5, label ='First transition orbit')
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'First Maneuver plot saved in {save_path}')
-
-#Save data for late
+#Save data for orbit details
 maneuver_data = {
     'cost1_km_s':      Delta_v_1,
     'Delta_t_1_s':         Delta_t_1,
@@ -120,11 +71,10 @@ out_path = os.path.join(output_dir, out_file)
 df_out.to_csv(out_path, index=False)
 
 print(f"First Maneuver data saved to {out_path}")
-"""
+
 #------------------------------------------------------------------------------------
 
 #2nd maneuvers : Change argument of pericenter
-img_name = 'second_man.pdf'
 out_file = 'second_man_data.csv'
 
 # Change the argument of pericenter
@@ -147,58 +97,17 @@ else:
     Delta_v_2, om_final, theta_maneuver_2 = changePeriapsisArg(a_i, e_i, om_transition, Delta_om, theta_B)
     Delta_t_2 = Delta_t_B
     theta_change_periapsis = theta_B
-'''
-print("Cost of the Maneuver:", Delta_v_2, "km/s")
-print("Time to perform the maneuver:", Delta_t_2, "s")
-print("Final argument of periapsis:", om_final, "rad")
-print("Final true anomaly:", theta_maneuver_2, "rad")
-'''
-
-
-# Plot the FIRST transition orbit and the SECOND transition orbit 
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title(plot_3d_title, fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# Plot FIRST transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_transition, theta_maneuver_1])
-X_trans_1, Y_trans_1, Z_trans_1 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot SECOND transition orbit (after maneuver)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_maneuver_2])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_trans_1, Y_trans_1, Z_trans_1, color='orange', linewidth=1.5, label='First transition orbit')
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color = "blue", linewidth = 1.5, label ='Second transition orbit')
-
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Second Maneuver plot saved in {save_path}')
 
 #Save data for late
 maneuver_data = {
     'cost2_km_s':      Delta_v_2,
     'Delta_t_2_s':     Delta_t_2,
+    'theta_before_maneuver_2_rad': theta_change_periapsis,
+    'om_transition_rad': om_transition,
     'om_final':        om_final,
     'theta_maneuver_2_rad':  theta_maneuver_2
 }
+
 df_out = pd.DataFrame([maneuver_data])
 out_path = os.path.join(output_dir, out_file)
 df_out.to_csv(out_path, index=False)
@@ -224,58 +133,26 @@ else:
 Delta_v_3 = Delta_v_Hohmann1 + Delta_v_Hohmann2 # Total Cost of the Hohmann transfer
 Delta_t_3 = Delta_t_preHohmann + Delta_t_Hohmann # Total time cost for the Hohmann transfer
 
+# Determine the orbital elements of the Hohmann transition orbit
+r_p_initial = a_i * (1 - e_i) # Periapsis of the initial orbit
+r_a_final = a_f * (1 + e_f) # Apoapsis final orbit
+a_Hohmann = (r_p_initial + r_a_final) / 2
+e_Hohmann = (r_a_final - r_p_initial) / (r_p_initial + r_a_final)
+
 # Wait until it reaches theta_f
 Delta_t_4 = timeOfFlight(a_f, e_f, theta_after_Hohmann, theta_f) # Time to reach the final position [s]
-'''
-print("Cost of the Maneuver:", Delta_v_3, "km/s")
-print("Time to perform the maneuver:", Delta_t_3, "s")
-print("Final semi-major axis:", a_f, "km")
-print("Final eccentricity:", e_f)
-print("Final true anomaly:", theta_after_Hohmann, "rad")
-'''
 
-#Plot the SECOND transition orbit and the FINAL orbit
-fig = plt.figure(figsize=(8, 8))
-ax = fig.add_subplot(111, projection='3d')
-ax.set_box_aspect([1, 1, 1])
-ax.set_xlabel('X [km]', fontsize=12)
-ax.set_ylabel('Y [km]', fontsize=12)
-ax.set_zlabel('Z [km]', fontsize=12)
-ax.set_title(plot_3d_title, fontsize=14)
-
-ticks = [-1e4, -0.5e4, 0, 0.5e4, 1e4]
-ax.set_xticks(ticks)
-ax.set_yticks(ticks)
-ax.set_zticks(ticks)
-
-ax.set_xlim(-1.2e4, 1.2e4)
-ax.set_ylim(-1.2e4, 1.2e4)
-ax.set_zlim(-1.2e4, 1.2e4)
-
-earth_3D(ax)
-
-# -----------------------------
-# Plot SECOND transition orbit (with initial Hohmann maneuver point)
-current_orbit = np.array([a_i, e_i, i_f, OM_f, om_final, theta_pre_Hohmann])
-X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "red")
-# Plot FINAL orbit (with second Hohmann maneuver point)
-current_orbit = np.array([a_f, e_f, i_f, OM_f, om_f, theta_after_Hohmann])
-X_f_0, Y_f_0, Z_f_0 = plotOrbit(current_orbit, theta_mark=True, ax=ax, mark_color = "green")
-
-ax.plot(X_trans_2, Y_trans_2, Z_trans_2, color='orange', linewidth=1.5, label='Second transition orbit')
-ax.plot(X_f_0, Y_f_0, Z_f_0, color = "blue", linewidth = 1.5, label ='Final orbit')
-
-ax.legend()
-
-#Save img 
-save_path = os.path.join(output_dir, img_name)
-plt.savefig(save_path)
-print(f'Third Maneuver plot saved in {save_path}')
-
-#Save data for late
+#Save data for orbit details
 maneuver_data = {
     'cost3_km_s':      Delta_v_3,
+    'Delta_v_Hohmann1_km_s': Delta_v_Hohmann1,
+    'Delta_v_Hohmann2_km_s': Delta_v_Hohmann2,
     'Delta_t_3_s':     Delta_t_3,
+    'Delta_t_before_Hohmann_s': Delta_t_preHohmann,
+    'Delta_t_Hohmann_s': Delta_t_Hohmann,
+    'theta_pre_Hohmann_rad': theta_pre_Hohmann,
+    'a_Hohmann':     a_Hohmann,
+    'e_Hohmann':     e_Hohmann,
     'a_final':         a_f,
     'e_final':         e_f,
     'final_theta_anom': theta_after_Hohmann
@@ -371,12 +248,6 @@ X_trans_2, Y_trans_2, Z_trans_2 = plotOrbit(transition_orbit_2, deltaTh = (theta
                                         mark_label = "")
 
 # Plot Third transition orbit (Hohmann transfer)
-# Determine the orbital elements of the Hohmann transition orbit
-r_p_initial = a_i * (1 - e_i) # Periapsis of the initial orbit
-r_a_final = a_f * (1 + e_f) # Apoapsis final orbit
-a_Hohmann = (r_p_initial + r_a_final) / 2
-e_Hohmann = (r_a_final - r_p_initial) / (r_p_initial + r_a_final)
-
 # Plot Hohmann transition orbit, mark on the first impulse
 transition_orbit_3 = np.array([a_Hohmann, e_Hohmann, i_f, OM_f, om_f, theta_pre_Hohmann])
 X_trans_3, Y_trans_3, Z_trans_3 = plotOrbit(transition_orbit_3, deltaTh = (theta_after_Hohmann - theta_pre_Hohmann) % (2 * np.pi),

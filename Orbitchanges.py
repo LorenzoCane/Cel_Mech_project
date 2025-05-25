@@ -192,10 +192,12 @@ def changeOrbitShape_bielliptic(a_i, e_i, om_i, a_f, e_f, om_f, r_b, mu = 398600
       np.sqrt(2 * mu * (1 / rp_f - 1 / (2 * a_T_2)))
   )  
 
-  Delta_t = np.pi * np.sqrt(a_T_1**3 /mu) + np.pi * np.sqrt(a_T_2 ** 3/mu)   # Time cost of the Maneuver [s]
+  Delta_t1 = np.pi * np.sqrt(a_T_1**3 /mu) # Time cost of the Maneuver [s]
+  Delta_t2 = np.pi * np.sqrt(a_T_2**3 /mu) # Time cost of the Maneuver [s]
+  Delta_t = Delta_t1 + Delta_t2
   theta_f = 0 # True anomaly on final orbit [rad]
 
-  return Delta_v1, Delta_v2, Delta_v3, Delta_t, theta_f
+  return Delta_v1, Delta_v2, Delta_v3, Delta_t, Delta_t1, Delta_t2, theta_f
 
 #****************************************************************************************************
 def changePeriapsisArg(a_i, e_i, om_i, Delta_om, theta_0, mu = 398600.433):
@@ -491,4 +493,4 @@ def changeOrbitalPlane_bielliptic(a_i, e_i, om_i, i_i, Om_i, a_f, e_f, i_f, Om_f
     # Total cost of the maneuer
     Delta_v = np.abs(Delta_v1) + np.abs(Delta_v2) + np.abs(Delta_v3)
 
-    return Delta_v, Delta_t, om_T2, theta_T2, theta_f2
+    return Delta_v, Delta_v1, Delta_v2, Delta_v3, Delta_t, Delta_t1, Delta_t2, om_T2, theta_T2, theta_f2

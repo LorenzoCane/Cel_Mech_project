@@ -20,7 +20,7 @@ df = pd.read_csv(input_path)
 plot_3d_title = '3D Satellite Orbit (ECI Frame)'
 plot_2d_title = '2D Proj. of Sat Orbit in the EP (ECI Frame)'
 
-#Select orbid ID
+#Select orbit ID
 orbit_id = 'B1'
 
 # select the row
